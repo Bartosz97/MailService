@@ -1,16 +1,27 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace MailService1
 {
     public static class Function1
     {
         [FunctionName("Function1")]
-        public static void Run([QueueTrigger("warsztaty", Connection = "DefaultEndpointsProtocol=https;AccountName=codeandcloudstorage;AccountKey=qGBu92MukQm0/cocMBL/EArWG3/hQlsAOccA6O/Q3EuFpkWElmJi2ywad7sblFt/4lfKqDM3vcs07up2MnxdrQ==;EndpointSuffix=core.windows.net")]string myQueueItem, ILogger log)
+        public static async Task Run([QueueTrigger("warsztaty")]string myQueueItem, ILogger log)
         {
-            log.LogInformation($"C# Queue trigger function processed: {myQueueItem}");
+                var apiKey = "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";
+                var client = new SendGridClient(apiKey);
+                var from = new EmailAddress("andrzej.duda@gov.pl", "Andrzej");
+                var subject = "Temat";
+                var to = new EmailAddress("bartoszdudek5@wp.pl", "Andrzej");
+                var plainTextContent = "and easy to do anywhere, even with C#";
+                var htmlContent = "<strong>To jest mail wyslany z az -> </strong>" + myQueueItem;
+                var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+                var response = await client.SendEmailAsync(msg);         
         }
     }
 }
